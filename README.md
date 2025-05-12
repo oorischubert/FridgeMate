@@ -8,9 +8,8 @@ FridgeMate is a smart food management system that helps you track your food inve
 - 📸 Computer vision for food detection (apples, bananas, etc.)
 - 🤚 Hand tracking for interactive features
 - 🔍 Search and filter food items in/out of fridge
-- 🧠 AI-powered recipe suggestions
-- 📱 Firebase integration for cloud storage
-- 🤖 OpenAI integration for image analysis and recipe generation
+- 📱 Firebase integration for app integration
+- 🤖 OpenAI integration for image analysis
 
 ## Prerequisites
 
@@ -41,21 +40,7 @@ pip install -r requirements.txt
 ```bash
 # Create a .env file with your credentials
 OPENAI_API_KEY=your_openai_api_key
-FIREBASE_CREDENTIALS=your_firebase_credentials_json
-```
-
-## Project Structure
-
-```
-FridgeMate/
-├── food.py           # Food class definition
-├── firebase.py       # Firebase integration
-├── openapi.py        # OpenAI API integration
-├── detector_server.py # Computer vision and hand tracking
-├── handTracking.py   # Hand tracking implementation
-├── coco_labels.txt   # Object detection labels
-├── requirements.txt  # Project dependencies
-└── README.md        # This file
+FIREBASE_CREDENTIALS=your_firebase_credentials.json
 ```
 
 ## Usage
@@ -78,6 +63,9 @@ apple = Food(
 
 # Convert to dictionary for storage
 food_dict = apple.to_dict()
+
+# Check if expired
+expired = apple.isExpired()
 ```
 
 ### Firebase Integration
@@ -92,7 +80,7 @@ firebase = FirebaseUploader()
 food_id = firebase.upload_food(apple)
 
 # Get food items
-foods = firebase.get_foods(in_fridge=True, limit=10)
+foods = firebase.get_foods(in_fridge=True, limit=100)
 
 # Update food status
 firebase.update_food_status(food_id, in_fridge=False)
@@ -106,14 +94,8 @@ from openapi import OpenAPI
 # Initialize OpenAI
 api = OpenAPI()
 
-# Get recipe suggestions
-recipes = api.get_recipe_suggestions(
-    ingredients=["chicken", "rice", "vegetables"],
-    dietary_restrictions=["gluten-free"]
-)
-
 # Analyze food image
-analysis = api.analyze_image("path/to/food.jpg", "What food is this?")
+analysis = api.getLabel("path/to/food.jpg", "Label prompt")
 ```
 
 ### Computer Vision

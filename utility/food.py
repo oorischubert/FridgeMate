@@ -1,6 +1,5 @@
 from datetime import datetime
-from typing import Optional
-
+#hey my name is oori
 FOOD_TYPES = ['fruits','vegetables','meats',"grains","dairy","drinks"]
 class Food:
     def __init__(self, name: str, description: str, foodType: str, expirationDate: datetime, count: int = 1, inFridge: bool = False):
@@ -11,7 +10,6 @@ class Food:
         self.description = description
         self.foodType = foodType
         
-
     def to_dict(self) -> dict:
         return {
             'name': self.name,
@@ -32,3 +30,6 @@ class Food:
             description=data.get("description",'none'),
             foodType=data.get("foodType","none")
         )
+    
+    def isExpired(self) -> bool:
+        return self.expirationDate < datetime.now()

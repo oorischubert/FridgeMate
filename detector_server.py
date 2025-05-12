@@ -147,7 +147,6 @@ async def message_handler(msg, nc, interpreter, input_details, labels, input_hei
 
         # --- HAND TRACKING END ---
 
-
         # --- OBJECT DETECTION START ---
         # Preprocess for object detection
         img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB) # Model likely expects RGB
