@@ -69,9 +69,11 @@ from datetime import datetime, timedelta
 # Create a new food item
 apple = Food(
     name="Apple",
-    expiration_date=datetime.now() + timedelta(days=7),
+    expirationDate=datetime.now() + timedelta(days=7),
     count=5,
-    inFridge=True
+    inFridge=True,
+    foodType="fruit",
+    description="a red apple"
 )
 
 # Convert to dictionary for storage

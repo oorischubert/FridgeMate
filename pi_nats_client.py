@@ -25,7 +25,7 @@ RESULTS_SUBJECT = "detection.results"  # Subject to receive results FROM
 CAMERA_INDEX = 0                       # Default USB camera index if not using PiCamera
 FRAME_WIDTH = 640                      # Lower resolution is better for streaming
 FRAME_HEIGHT = 480
-JPEG_QUALITY = 65                      # Adjust quality vs size (0-100)
+JPEG_QUALITY = 75                      # Adjust quality vs size (0-100)
 PUBLISH_DELAY_SECONDS = 0.05           # Target ~20 FPS (adjust as needed)
 
 # --- Global flag for shutdown ---

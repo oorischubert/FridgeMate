@@ -134,7 +134,6 @@ class handDetector():
             return True
 
         return False
-
     
 def main():
     pTime = 0

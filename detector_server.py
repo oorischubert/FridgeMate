@@ -5,29 +5,26 @@ import nats
 from nats.errors import ConnectionClosedError, TimeoutError, NoServersError
 import signal
 import argparse
-import sys
-import time # For timestamping messages
-import math # Needed for handTracking distance/angle
+import time 
 import tensorflow as tf
+import os
+import csv
 Interpreter = tf.lite.Interpreter
 
 # >>> HAND TRACKING IMPORT <<<
-import handTracking as htm
-# Remove autopy if it was accidentally imported, not needed here
-# import autopy
-
+import utility.handTracking as htm
 
 # --- Configuration ---
 DEFAULT_NATS_URL = "nats://localhost:4222"
 FRAMES_SUBJECT = "camera.frames"
-RESULTS_SUBJECT = "detection.results" # Subject to PUBLISH results TO Pi
+RESULTS_SUBJECT = "detection.results" 
 WINDOW_NAME = "FridgeMate Stream"
 
 # --- TFLite Model Configuration ---
-MODEL_PATH = '1.tflite'
-LABEL_PATH = 'coco_labels.txt'
-CONFIDENCE_THRESHOLD = 0.4 # Adjusted based on previous findings
-TARGET_LABELS = ["apple", "banana", "cell phone"] # Corrected: "cell_phone" -> "cell phone" for COCO
+MODEL_PATH = 'utility/model.tflite'
+LABEL_PATH = 'utility/coco_labels.txt'
+CONFIDENCE_THRESHOLD = 0.4 
+TARGET_LABELS = ["apple", "banana", "cell phone"]
 
 # --- Hand Tracking Configuration ---
 MAX_HANDS = 1 # Let's track only one hand for simplicity now
@@ -50,19 +47,34 @@ def handle_signal(sig, frame):
     cv2.destroyAllWindows()
 
 # --- Helper function to load labels ---
-def load_labels(path):
+def load_labels(path: str):
     label_map = {}
-    with open(path, "r") as f:
+    # --- CSV branch ---------------------------------------------------------
+    if os.path.splitext(path)[1].lower() == ".csv":
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if not row:
+                    continue                       # blank line
+                if not row[0].strip().isdigit():
+                    continue                       # likely a header
+                class_id = int(row[0])
+                label_text = row[1].strip() if len(row) > 1 else ""
+                label_map[class_id] = label_text
+        return label_map
+
+    # --- Plain-text branch --------------------------------------------------
+    with open(path, "r", encoding="utf-8") as f:
         for line_num, line in enumerate(f):
             parts = line.strip().split(maxsplit=1)
             if len(parts) == 2 and parts[0].isdigit():
                 class_id = int(parts[0])
-                label = parts[1]
+                label_text = parts[1]
             else:
                 class_id = line_num
-                label = parts[0] if parts else ""
-            label_map[class_id] = label
-    #print(label_map)
+                label_text = parts[0] if parts else ""
+            label_map[class_id] = label_text
+
     return label_map
 
 
@@ -99,8 +111,8 @@ async def message_handler(msg, nc, interpreter, input_details, labels, input_hei
         img_bgr = hand_detector.findHands(img_bgr, draw=True)
         # 2. Get landmark positions (without drawing default circles/box)
         lmList, bbox = hand_detector.findPosition(img_bgr, draw=False)
-
         hand_detected_this_frame = False
+
         if len(lmList) != 0:
             hand_detected_this_frame = True
             # 3. Calculate distance between base of index (5) and pinky (17) as proxy for hand size/distance
@@ -122,13 +134,6 @@ async def message_handler(msg, nc, interpreter, input_details, labels, input_hei
                 # Display the relative distance on the image
                 cv2.putText(img_bgr, f"Rel Dist: {current_relative_distance:.2f}", (10, original_h - 60),
                             cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 255), 2)
-
-                # Publish hand distance via NATS
-                # hand_payload = f"HAND_DIST:{current_relative_distance:.2f}".encode('utf-8')
-                # try:
-                #     await nc.publish(RESULTS_SUBJECT, hand_payload)
-                # except Exception as e:
-                #     print(f"ERROR: Failed to publish hand distance: {e}")
 
         # Optional: If hand disappears, maybe reset baseline? Or let distance stay?
         # else: # No hand detected
@@ -269,13 +274,6 @@ async def main_viewer(nats_url, model_path_arg, label_path_arg): # Added argumen
 
         print(f"Subscribing to frames subject: '{FRAMES_SUBJECT}'")
         sub = await nc.subscribe(FRAMES_SUBJECT, cb=wrapped_message_handler)
-
-        # --- STDIN Sender Task (Optional) ---
-        async def send_messages_stdin():
-            # (Keep the stdin sender code as is if you still want it)
-             print("INFO: stdin message sender started. Type 'exit' in terminal to stop.")
-             # ... (rest of stdin sender code) ...
-        # stdin_sender_task = asyncio.create_task(send_messages_stdin()) # Uncomment to enable
 
 
         print("Viewer running. Waiting for frames...")
