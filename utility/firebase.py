@@ -2,7 +2,6 @@ import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime, timedelta
-import json
 from typing import Optional, List
 from food import Food, FOOD_TYPES
 
@@ -138,11 +137,11 @@ if __name__ == "__main__":
 
         print("\nCreating sample food item...")
         sample_food = Food(
-            name="banana",
-            expirationDate=datetime.now() + timedelta(days=5),
-            count=3,
+            name="avocado",
+            expirationDate=datetime.now() + timedelta(days=7),
+            count=2,
             inFridge=True,
-            description="stupid banana",
+            description="stupid avocado",
             foodType=FOOD_TYPES[0]
             
         )

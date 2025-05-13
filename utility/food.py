@@ -1,6 +1,7 @@
 from datetime import datetime
-#hey my name is oori
+
 FOOD_TYPES = ['fruits','vegetables','meats',"grains","dairy","drinks"]
+
 class Food:
     def __init__(self, name: str, description: str, foodType: str, expirationDate: datetime, count: int = 1, inFridge: bool = False):
         self.name = name
@@ -9,6 +10,9 @@ class Food:
         self.inFridge = inFridge
         self.description = description
         self.foodType = foodType
+
+    def __str__(self) -> str:
+        return(f"Name: {self.name}\nDescripton: {self.description}\nCount: {self.count}\nFoodType: {self.foodType}\nExpirationDate: {self.expirationDate}\nInFridge: {self.inFridge}\n")
         
     def to_dict(self) -> dict:
         return {
@@ -33,3 +37,5 @@ class Food:
     
     def isExpired(self) -> bool:
         return self.expirationDate < datetime.now()
+
+    

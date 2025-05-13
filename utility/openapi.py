@@ -6,7 +6,9 @@ import base64
 from PIL import Image
 import io
 import json
-from food import FOOD_TYPES
+from datetime import datetime, timedelta
+from food import Food, FOOD_TYPES
+from firebase import FirebaseUploader
 
 LABEL_PROMPT = 'What is the person holding in their hand? Respond in json format with label and whether it is a food item or not in format {"label": "item_label", "food": "bool", "count": "int_numberofitems", "description": "short_descriptionof_item", type: "food_type:} it not holding anything, both the description and label should be "none", count 0 and is_food should be false. type must exist in %s or be none if not food.'%FOOD_TYPES
 MODEL = 'gpt-4.1-mini'
@@ -78,6 +80,8 @@ if __name__ == "__main__":
     print("Testing OpenAPI getLabel function...")
 
     test_image_path = "test_images/test_image1.jpg" 
+    
+    server = FirebaseUploader()
 
     if not os.path.exists(test_image_path):
         print(f"Error: Test image not found at {test_image_path}. Please provide a valid image for testing.")
@@ -110,22 +114,16 @@ if __name__ == "__main__":
                 except Exception as e:
                     print(f"Error converting {count} to int!")
                     
-                print(f"Detected Label: {item_label}")
-                print(f"Is Food: {is_food}")
-                print(f"Count: {count}")
-                print(f"Description: {item_description}")
+                food = Food(name=item_label, description=item_description, count=count, expirationDate=datetime.now()+timedelta(days=7), inFridge=True, foodType=foodType)
+                
+                print(food)
+                
+                #server.upload_food(food=food)
                 
                 # Check if the food type exists in FOOD_TYPES
                 food_type_exists = foodType in FOOD_TYPES
-                print(f"Type: {foodType}, exists in typeList = {food_type_exists}")
-
-                # Example of further action based on parsing:
-                if is_food is True and item_label != "none":
-                    print("Action: This is a food item!")
-                elif item_label == "none":
-                    print("Action: Nothing seems to be held.")
-                else:
-                    print("Action: This is not identified as food or nothing is held.")
+                print(f"Type: {foodType}, exists in typeList = {food_type_exists}")                 
+            
 
         except ValueError as ve:
             print(f"Error during testing: {ve}")
