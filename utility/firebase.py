@@ -3,6 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime, timedelta
 from typing import Optional, List
+from fridge import Fridge
 from food import Food, FOOD_TYPES
 
 FIREBASE_APP_NAME = "fridgemate123"
@@ -41,6 +42,41 @@ class FirebaseUploader:
         except Exception as e:
              print(f"Error getting Firestore client: {e}")
              raise # Cannot proceed without Firestore client
+         
+    def get_fridge(self, fridge: Fridge) -> Fridge:
+        if not self.db:
+            print("Error: Firestore client not initialized.")
+            return fridge
+
+        try:
+            fridge_ref = self.db.collection('main').document('fridge')
+            fridge_data = fridge_ref.get().to_dict()
+
+            if fridge_data:
+                fridge.from_dict(fridge_data)
+                print("Fridge data retrieved successfully.")
+            else:
+                print("No fridge data found in Firestore.")
+
+        except Exception as e:
+            print(f"Error retrieving fridge data: {e}")
+
+        return fridge
+
+    def set_fridge(self, fridge: Fridge) -> bool:
+        if not self.db:
+            print("Error: Firestore client not initialized.")
+            return False
+
+        try:
+            fridge_ref = self.db.collection('main').document('fridge')
+            fridge_ref.set(fridge.to_dict())
+            print("Fridge data uploaded successfully.")
+            return True
+
+        except Exception as e:
+            print(f"Error uploading fridge data: {e}")
+            return False
 
     def upload_food(self, food: Food) -> Optional[str]:
         """Upload food data (without image) to Firebase Firestore."""
@@ -143,12 +179,20 @@ if __name__ == "__main__":
             inFridge=True,
             description="stupid avocado",
             foodType=FOOD_TYPES[0]
-            
         )
+        
+        sample_fridge = Fridge(
+            uid="123",
+            humidity=1,
+            temperature=34,
+            isOpen=False
+        )
+        
         print(f"Sample food created: {sample_food.name}")
 
         print(f"\nAttempting to upload '{sample_food.name}' data...")
         document_id = uploader.upload_food(sample_food) 
+        #document_id = uploader.set_fridge(sample_fridge)
 
         if document_id:
             print(f"\n--- Upload Test SUCCESS ---")
