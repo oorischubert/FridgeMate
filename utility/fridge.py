@@ -21,7 +21,7 @@ class Fridge:
     @classmethod
     def from_dict(cls, data: dict) -> 'Fridge':
         return cls(
-            uid=data['nuidame'],
+            uid=data['uid'],
             temperature=data.get('temperature',0),
             humidity=data.get('humidity', 0),
             isOpen=data.get('isOpen', False),

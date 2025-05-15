@@ -14,6 +14,7 @@ LABEL_PROMPT = 'What is the person holding in their hand? Respond in json format
 MODEL = 'gpt-4.1-mini'
 
 # https://platform.openai.com/playground/prompts?models=gpt-4.1-mini
+# https://cookbook.openai.com/examples/gpt4-1_prompting_guide 
 
 class OpenAPI:
     def __init__(self, api_key: Optional[str] = None):
